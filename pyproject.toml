@@ -1,0 +1,22 @@
+[project]
+name = "shell-sort-stand"
+version = "0.1.0"
+description = "Стенд для сравнения сортировки Шелла на Python и C++"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Mishalo4ka", email = "omvgim6@gmail.com" }
+]
+requires-python = ">=3.13"
+
+[project.scripts]
+shell-sort-stand = "shell_sort_stand.benchmark:main"
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = ""
+source-include = ["tests/*.py"]
