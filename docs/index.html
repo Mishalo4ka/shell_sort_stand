@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Сортировка Шелла</title>
+  <meta name="description" content="Как работает сортировка Шелла: наглядный пример, реализации на C++ и Python и выбор последовательности шагов.">
+  <link rel="stylesheet" href="article.css">
+  <script src="example.js" defer></script>
+  <script src="language-chart.js" defer></script>
+</head>
+<body>
+<header class="mast">
+  <h1>Сортировка Шелла</h1>
+  <a href="https://github.com/Mishalo4ka/shell_sort_stand">
+    <svg width="20" height="20" viewBox="0 0 16 16" aria-hidden="true" focusable="false" fill="#24292f">
+      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/>
+    </svg>
+    Mishalo4ka/shell_sort_stand
+  </a>
+</header>
+<div class="layout">
+  <nav class="toc" aria-label="Содержание">
+    <strong>Содержание</strong>
+    <a href="#method">Идея метода</a>
+    <a href="#example">Пошаговый пример</a>
+    <a href="#code">Реализация</a>
+    <a href="#timing">Сравнение языков</a>
+    <a href="#sequences">Последовательности шагов</a>
+    <a href="#sequence-timing">Сравнение последовательностей</a>
+    <a href="#sequence-bars">Время по последовательностям</a>
+    <a href="#sources">Источники</a>
+  </nav>
+  <figure class="portrait">
+    <img src="donald-shell.jpg" alt="Портрет Дональда Шелла" width="298" height="417">
+    <figcaption><a href="https://ru.wikipedia.org/wiki/Шелл,_Дональд">Дональд Шелл, 1959 год</a></figcaption>
+  </figure>
+  <main id="about">
+    <p class="lead"><b>Сортировка Шелла</b> (англ. <i lang="en">Shell sort</i>) — вариант сортировки вставками, в котором сначала упорядочивают элементы, стоящие далеко друг от друга. Расстояние между ними называют <i>шагом</i>. Дональд Шелл предложил этот метод в 1959 году. <a href="#s1" aria-label="Источник 1">[1]</a></p>
+    <section id="method">
+      <h2>Идея метода</h2>
+      <p>При обычной сортировке вставками маленькому числу в конце массива приходится двигаться к началу через все бо́льшие числа перед ним. Метод Шелла позволяет за одно перемещение преодолеть сразу несколько позиций.</p>
+      <p>Выберем шаг <i>h</i> = 4. В одну группу попадут элементы на позициях 1, 5, 9 и далее, в другую — на позициях 2, 6, 10. Каждую такую группу сортируем вставками. Затем уменьшаем шаг и повторяем проход. При <i>h</i> = 1 весь массив образует одну группу, и последний проход завершает сортировку.</p>
+    </section>
+    <section id="example">
+      <h2>Пошаговый пример</h2>
+      <p>Возьмём восемь чисел и исходную последовательность Шелла. Начнём с половины длины массива и будем делить шаг пополам. Получатся три прохода с шагами 4, 2 и 1. Каждое нажатие «Далее» показывает следующее сравнение в реализации на Python. В обеих строках выделена одна и та же пара позиций.</p>
+      <figure id="demo" hidden>
+        <div aria-live="polite" aria-atomic="true">
+          <div class="rows" id="array"></div>
+          <p class="gap-caption">Размер шага: <strong id="gap"></strong></p>
+          <p class="explanation" id="explanation"></p>
+        </div>
+        <div class="controls">
+          <span id="progress" role="status"></span>
+          <button type="button" id="reset" aria-label="Начать сначала" title="Начать сначала">↺</button>
+          <button type="button" id="prev">Назад</button>
+          <button type="button" id="next">Далее</button>
+        </div>
+      </figure>
+      <noscript><pre>Исходный массив   8 3 6 1 4 7 2 5
+После шага 4      4 3 2 1 8 7 6 5
+После шага 2      2 1 4 3 6 5 8 7
+После шага 1      1 2 3 4 5 6 7 8</pre></noscript>
+      <p>После прохода с шагом 2 на нечётных позициях стоят 2, 4, 6, 8, на чётных — 1, 3, 5, 7. Обе группы уже упорядочены. Теперь каждому из чисел 1, 3, 5 и 7 достаточно сдвинуться влево на одну позицию.</p>
+    </section>
+    <section id="code">
+      <h2>Реализация</h2>
+      <details open><summary>C++</summary>
+<pre><code><span class="syntax-type">void</span> <span class="syntax-function">shell_sort</span>(<span class="syntax-type">int</span> *arr, <span class="syntax-keyword">const</span> <span class="syntax-type">int</span> size) {
+    <span class="syntax-type">int</span> step = size / <span class="syntax-number">2</span>;
+    <span class="syntax-keyword">while</span> (step &gt; <span class="syntax-number">0</span>) {
+        <span class="syntax-keyword">for</span> (<span class="syntax-type">int</span> i = step; i &lt; size; i++) {
+            <span class="syntax-type">int</span> j = i;
+            <span class="syntax-type">int</span> x = arr[j];
+            <span class="syntax-keyword">while</span> (j &gt;= step &amp;&amp; x &lt; arr[j - step]) {
+                arr[j] = arr[j - step];
+                j -= step;
+            }
+            arr[j] = x;
+        }
+        step /= <span class="syntax-number">2</span>;
+    }
+}</code></pre></details>
+      <details><summary>Python</summary>
+<pre><code><span class="syntax-keyword">def</span> <span class="syntax-function">shell_sort</span>(data: <span class="syntax-type">list</span>[<span class="syntax-type">int</span>]) -&gt; <span class="syntax-type">list</span>[<span class="syntax-type">int</span>]:
+    step = <span class="syntax-function">len</span>(data) // <span class="syntax-number">2</span>
+    <span class="syntax-keyword">while</span> step &gt; <span class="syntax-number">0</span>:
+        <span class="syntax-keyword">for</span> i <span class="syntax-keyword">in</span> <span class="syntax-function">range</span>(step, <span class="syntax-function">len</span>(data)):
+            j = i
+            <span class="syntax-keyword">while</span> j &gt;= step <span class="syntax-keyword">and</span> data[j - step] &gt; data[j]:
+                data[j - step], data[j] = data[j], data[j - step]
+                j -= step
+        step //= <span class="syntax-number">2</span>
+    <span class="syntax-keyword">return</span> data</code></pre></details>
+    </section>
+    <section id="timing" data-comparison="language">
+      <h2>Сравнение языков</h2>
+      <p>Каждая точка показывает медианное время по пяти значениям seed.</p>
+      <div class="timing-filters" hidden>
+        <label>Устройство<select id="timing-device" name="device"></select></label>
+        <label>Последовательность<select id="timing-sequence" name="sequence"></select></label>
+        <label>Тип данных<select id="timing-data" name="data"></select></label>
+      </div>
+      <figure class="timing-figure" hidden>
+        <figcaption>Время сортировки, мс</figcaption>
+        <div class="chart-toolbar">
+          <div class="chart-key"></div>
+          <div class="chart-zoom" role="group" aria-label="Масштаб графика">
+            <button type="button" id="zoom-out" data-zoom="out" aria-label="Уменьшить масштаб" title="Уменьшить масштаб">−</button>
+            <output id="zoom-level" aria-label="Текущий масштаб">1×</output>
+            <button type="button" id="zoom-in" data-zoom="in" aria-label="Увеличить масштаб" title="Увеличить масштаб">+</button>
+            <button type="button" id="zoom-reset" data-zoom="reset">Сбросить</button>
+          </div>
+        </div>
+        <svg id="timing-plot" tabindex="0" role="img" aria-label="Время сортировки на Python и C++"></svg>
+      </figure>
+      <details id="timing-values" hidden>
+        <summary>Численные значения</summary>
+        <table><thead><tr><th scope="col"><i>N</i></th><th scope="col">Python, мс</th><th scope="col">C++, мс</th><th scope="col" title="Время Python, делённое на время C++">Ускорение C++</th></tr></thead><tbody></tbody></table>
+      </details>
+      <p id="timing-message" role="status"></p>
+      <noscript><p>Для выбора параметров графика включите JavaScript. <a href="data/by-language.json">Данные сравнения</a>.</p></noscript>
+    </section>
+    <section id="sequences">
+      <h2>Последовательности шагов</h2>
+      <p>Среднее время работы алгоритма зависит от длин промежутков — <i>d</i>, на которых будут находиться сортируемые элементы исходного массива ёмкостью <i>N</i> на каждом шаге алгоритма. Существует несколько подходов к выбору этих значений:</p>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Сравнение последовательностей шагов"><table>
+        <thead>
+          <tr><th scope="col">Автор</th><th scope="col">Как выбираются шаги</th><th scope="col">Формула</th><th scope="col">При <i>N</i> = 16</th><th scope="col">Время в худшем случае <a href="#s5">[5]</a></th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Дональд Шелл</th>
+            <td>Делим длину массива пополам, затем так же уменьшаем каждый шаг с округлением вниз.</td>
+            <td>⌊<i>N</i>/2<sup><i>k</i></sup>⌋, <i>k</i> ≥ 1</td>
+            <td>8, 4, 2, 1</td><td>Θ(<i>N</i>²)</td>
+          </tr>
+          <tr>
+            <th scope="row">Томас Хиббард</th>
+            <td>Из каждой степени двойки вычитаем единицу.</td>
+            <td>2<sup><i>k</i></sup> − 1, <i>k</i> ≥ 1</td>
+            <td>15, 7, 3, 1</td><td>Θ(<i>N</i><sup>3/2</sup>)</td>
+          </tr>
+          <tr>
+            <th scope="row">Воган Пратт</th>
+            <td>Берём все произведения степеней двойки и тройки.</td>
+            <td>2<sup><i>p</i></sup> · 3<sup><i>q</i></sup>, <i>p</i>, <i>q</i> ≥ 0</td>
+            <td>12, 9, 8, 6, 4, 3, 2, 1</td><td>Θ(<i>N</i> log² <i>N</i>)</td>
+          </tr>
+          <tr>
+            <th scope="row">Дональд Кнут</th>
+            <td>Начинаем с единицы. Чтобы получить следующий член ряда, утраиваем предыдущий и прибавляем единицу. <a href="#s2">[2]</a></td>
+            <td>(3<sup><i>k</i></sup> − 1)/2, <i>k</i> ≥ 1</td>
+            <td>13, 4, 1</td><td>Θ(<i>N</i><sup>3/2</sup>)</td>
+          </tr>
+          <tr>
+            <th scope="row">Марчин Циура</th>
+            <td>В справочнике OEIS приведены девять экспериментально подобранных шагов: 1, 4, 10, 23, 57, 132, 301, 701, 1750. <a href="#s3">[3]</a> <a href="https://oeis.org/A102549">[OEIS]</a></td>
+            <td>Задано списком</td>
+            <td>10, 4, 1</td><td>Θ(<i>N</i>²) для этих девяти шагов</td>
+          </tr>
+        </tbody>
+      </table></div>
+    </section>
+    <section id="sequence-timing" data-comparison="sequence">
+      <h2>Сравнение последовательностей</h2>
+      <p>Каждая линия показывает медианное время сортировки для одной последовательности шагов.</p>
+      <div class="timing-filters" hidden>
+        <label>Устройство<select id="sequence-timing-device" name="device"></select></label>
+        <label>Язык<select id="sequence-timing-language" name="language"></select></label>
+        <label>Тип данных<select id="sequence-timing-data" name="data"></select></label>
+      </div>
+      <figure class="timing-figure" hidden>
+        <figcaption>Время сортировки, мс</figcaption>
+        <div class="chart-toolbar">
+          <div class="chart-key" role="group" aria-label="Отображаемые последовательности"></div>
+          <div class="chart-zoom" role="group" aria-label="Масштаб графика">
+            <button type="button" id="sequence-zoom-out" data-zoom="out" aria-label="Уменьшить масштаб" title="Уменьшить масштаб">−</button>
+            <output id="sequence-zoom-level" aria-label="Текущий масштаб">1×</output>
+            <button type="button" id="sequence-zoom-in" data-zoom="in" aria-label="Увеличить масштаб" title="Увеличить масштаб">+</button>
+            <button type="button" id="sequence-zoom-reset" data-zoom="reset">Сбросить</button>
+          </div>
+        </div>
+        <svg id="sequence-timing-plot" tabindex="0" role="img" aria-label="Время сортировки для разных последовательностей шагов"></svg>
+      </figure>
+      <details id="sequence-timing-values" hidden>
+        <summary>Численные значения</summary>
+        <table><thead><tr></tr></thead><tbody></tbody></table>
+      </details>
+      <p id="sequence-timing-message" role="status"></p>
+      <noscript><p>Для выбора параметров графика включите JavaScript. <a href="data/by-sequence.json">Данные сравнения</a>.</p></noscript>
+    </section>
+    <section id="sequence-bars">
+      <h2>Время по последовательностям</h2>
+      <div class="timing-filters" hidden>
+        <label>Устройство<select name="device"></select></label>
+        <label>Язык<select name="language"></select></label>
+        <label>Тип данных<select name="data"></select></label>
+        <label>Размер массива, <i>N</i><select name="size"></select></label>
+      </div>
+      <figure class="timing-figure" hidden>
+        <figcaption>Медианное время сортировки, мс</figcaption>
+        <div class="bar-scroll" tabindex="0" role="region" aria-label="Время сортировки по последовательностям">
+          <div class="bars"></div>
+        </div>
+      </figure>
+      <p role="status"></p>
+      <noscript>Для выбора параметров диаграммы включите JavaScript.</noscript>
+    </section>
+    <section id="sources">
+      <h2>Источники</h2>
+      <ol>
+        <li id="s1">D. L. Shell. <a href="https://doi.org/10.1145/368370.368387" lang="en">A High-Speed Sorting Procedure</a>. Communications of the ACM, 1959.</li>
+        <li id="s2">R. Sedgewick, K. Wayne. <a href="https://algs4.cs.princeton.edu/21elementary/Shell.java.html" lang="en">Algorithms, § 2.1. Shellsort</a>.</li>
+        <li id="s3">M. Ciura. <a href="https://doi.org/10.1007/3-540-44669-9_12" lang="en">Best Increments for the Average Case of Shellsort</a>. Fundamentals of Computation Theory, 2001.</li>
+        <li><a href="https://ru.wikipedia.org/wiki/Сортировка_Шелла">Сортировка Шелла</a>. Википедия.</li>
+        <li id="s5">R. Sedgewick. <a href="https://sedgewick.io/wp-content/themes/sedgewick/papers/1996Shellsort.pdf" lang="en">Analysis of Shellsort and Related Algorithms</a>. ESA, 1996.</li>
+        <li><a href="https://ru.wikipedia.org/wiki/Шелл,_Дональд">Шелл, Дональд</a>. Википедия.</li>
+        <li>Allyn Shell. <a href="https://commons.wikimedia.org/wiki/File:DonShell-1.jpg">Портрет Дональда Шелла</a>. Викисклад. Лицензия <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.</li>
+        <li><a href="https://github.com/Mishalo4ka/shell_sort_stand">Стенд для сравнения реализаций сортировки Шелла</a>. GitHub.</li>
+      </ol>
+    </section>
+  </main>
+</div>
+</body>
+</html>
